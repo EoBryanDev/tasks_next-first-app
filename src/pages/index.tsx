@@ -23,8 +23,17 @@ export default function Home() {
         </div>
 
         <h1 className={styles.title}>
-          App made up to you organize all your tasks 
+          App made up to you organize all your tasks
         </h1>
+
+        <div className={styles.infoContent}>
+          <section className={styles.box}>
+            <span>+12k posts</span>
+          </section>
+          <section className={styles.box}>
+            <span>+90 comments</span>
+          </section>
+        </div>
       </main>
     </div>
   );
