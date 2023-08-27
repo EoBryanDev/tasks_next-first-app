@@ -1,33 +1,37 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import { getSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+
 import { FiShare2 } from "react-icons/fi";
 import { FaTrash } from "react-icons/fa";
-import styles from "./styles.module.css";
-import TextArea from "@/components/TextArea";
 
-import { db } from "@/services/FirebaseConection";
 import {
-  addDoc,
   collection,
   query,
   orderBy,
   where,
   onSnapshot,
 } from "firebase/firestore";
+import { db } from "@/services/FirebaseConection";
+
+import TextArea from "@/components/TextArea";
+
 import { IDashboardProps } from "@/Interface/IDashboardProps";
 import { ITaskList } from "@/Interface/ITaskList";
+
+import { handleShare } from "./handles/handleShare";
+import { handleDeleteTask } from "./handles/handleDelete";
+import { handleRegisterTask } from "./handles/handleRegisterTask";
+import { handleCheckbox } from "./handles/handleCheckbox";
+
+import styles from "./styles.module.css";
 
 const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
   const [taskArea, setTaskArea] = useState("");
   const [publicTask, setPublicTask] = useState(false);
-
   const [taskList, setTaskList] = useState<ITaskList[]>([]);
-
-  const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPublicTask(e.target.checked);
-  };
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -40,7 +44,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
 
       onSnapshot(queryTask, (snapshot) => {
         let taskSnap = [] as ITaskList[];
-
 
         snapshot.forEach((doc) => {
           taskSnap.push({
@@ -55,33 +58,12 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
         setTaskList(taskSnap);
       });
     };
-    console.log('here');
-    
 
     loadTasks();
   }, [user.email]);
 
-  const handleRegisterTask = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (taskArea === "") {
-      alert("you must type something to submit your new task!");
-      return;
-    }
-    try {
-      await addDoc(collection(db, "tasks"), {
-        task: taskArea,
-        created: new Date(),
-        user: user.name,
-        email: user.email,
-        public: publicTask,
-      });
-      setTaskArea("");
-      setPublicTask(false);
-    } catch (error) {
-      console.log(error);
-    }
-    alert("submitted");
-  };
+
+
   return (
     <div className={styles.container}>
       <Head>
@@ -91,7 +73,16 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
         <section className={styles.content}>
           <div className={styles.contentForm}>
             <h1 className={styles.title}>What is your task?</h1>
-            <form onSubmit={handleRegisterTask}>
+            <form
+              onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleRegisterTask(
+                taskArea,
+                setTaskArea,
+                publicTask,
+                setPublicTask,
+                user,
+                e
+              )}
+            >
               <TextArea
                 placeholder='Type your task...'
                 value={taskArea}
@@ -105,7 +96,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
                   className={styles.checkbox}
                   id='check-box'
                   checked={publicTask}
-                  onChange={handleCheckbox}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCheckbox(e, setPublicTask)}
                 />
                 <label htmlFor={styles.checkbox}>
                   Let task be seen by everyone?
@@ -126,15 +117,27 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
                 {data.public && (
                   <div className={styles.tagContainer}>
                     <label className={styles.tag}>Public</label>
-                    <button className={styles.shareButton}>
+                    <button
+                      className={styles.shareButton}
+                      onClick={() => handleShare(data.id)}
+                    >
                       <FiShare2 size={22} color='#3183ff' />
                     </button>
                   </div>
                 )}
 
                 <div className={styles.taskContent}>
-                  <p>{data.task}</p>
-                  <button className={styles.trashButton}>
+                  {data.public ? (
+                    <Link href={`/task/${data.id}`}>
+                      <p>{data.task}</p>
+                    </Link>
+                  ) : (
+                    <p>{data.task}</p>
+                  )}
+                  <button
+                    className={styles.trashButton}
+                    onClick={() => handleDeleteTask(data.id)}
+                  >
                     <FaTrash size={24} color='#ea3140' />
                   </button>
                 </div>
@@ -147,6 +150,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
   );
 };
 export default Dashboard;
+
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req });
   if (!session?.user) {
