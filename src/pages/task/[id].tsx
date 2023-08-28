@@ -1,12 +1,27 @@
+import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import styles from "./styles.module.css";
 import { db } from "@/services/FirebaseConection";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { ITaskProps } from "@/Interface/ITaskProps";
 import TextArea from "@/components/TextArea";
+import { handleComment } from "./handles/handleComment";
+import { handleSubmit } from "./handles/handleSubmit";
+import { ICommentProps } from "@/Interface/ICommentProps";
 
-const Task: React.FC<ITaskProps> = ({ item }: ITaskProps) => {
+const Task: React.FC<ITaskProps> = ({ item, allComments }: ITaskProps) => {
+  const { data: session, status } = useSession();
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState<ICommentProps[]>(allComments || []);
   return (
     <div className={styles.container}>
       <Head>
@@ -22,10 +37,34 @@ const Task: React.FC<ITaskProps> = ({ item }: ITaskProps) => {
       <section className={styles.commentsContainer}>
         <h2>Comment</h2>
 
-        <form>
-          <TextArea placeholder="Type your comments.." />
-          <button className={styles.button}>Post it!</button>
+        <form
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
+            handleSubmit(e, comment, setComment, session, item?.taskId)
+          }
+        >
+          <TextArea
+            placeholder='Type your comments..'
+            value={comment}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleComment(e, setComment)
+            }
+          />
+          <button disabled={!session?.user} className={styles.button}>
+            Post it!
+          </button>
         </form>
+      </section>
+
+      <section className={styles.commentsContainer}>
+        <h2>All Comments</h2>
+        {(comments.length === 0 && (
+          <span>There was not found any comments...</span>
+        )) ||
+          comments.map((it) => (
+            <article key={it.id} className={styles.comment}>
+              <p>{it.comment}</p>
+            </article>
+          ))}
       </section>
     </div>
   );
@@ -36,6 +75,21 @@ export default Task;
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const id = params?.id as string;
   const docRef = doc(db, "tasks", id);
+
+  const q = query(collection(db, "comments"), where("taskId", "==", id));
+
+  const snapshotComments = await getDocs(q);
+
+  let allComments: ICommentProps[] = [];
+  snapshotComments.forEach((c) => {
+    allComments.push({
+      id: c.id,
+      comment: c.data().comment,
+      user: c.data().email,
+      name: c.data().user,
+      taskId: c.data().taskId,
+    });
+  });
 
   const snapshot = await getDoc(docRef);
 
@@ -67,6 +121,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     public: snapshot.data()?.public,
   };
   return {
-    props: { item: task },
+    props: { item: task, allComments: allComments },
   };
 };

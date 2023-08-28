@@ -1,3 +1,5 @@
+import { ICommentProps } from "./ICommentProps";
+
 export interface ITaskProps {
   item: {
     taskId: string;
@@ -7,4 +9,5 @@ export interface ITaskProps {
     email: string;
     public: boolean;
   };
+  allComments: ICommentProps[]
 }
