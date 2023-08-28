@@ -8,6 +8,10 @@
   flex-direction: column;
 }
 
+.main {
+  
+}
+
 .logoContent {
   display: flex;
   flex-direction: column;
@@ -49,6 +53,7 @@
 @media screen and (max-width: 580px){
   .hero {
     max-width: 80%;
+    width: 60%;
   }
   .title {
     font-size: 24px;
