@@ -19,6 +19,7 @@ import { handleSubmit } from "./handles/handleSubmit";
 import { ICommentProps } from "@/Interface/ICommentProps";
 import { FaTrash } from "react-icons/fa";
 import { Inter } from "next/font/google";
+import { handleDeleteComment } from "./handles/handleDeleteComment";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -78,7 +79,7 @@ const Task: React.FC<ITaskProps> = ({ item, allComments }: ITaskProps) => {
                 <div className={styles.headComment}>
                   <label className={styles.commentLabel}>{it.name}</label>
                   {session?.user?.email === it.user && (
-                    <button className={styles.buttonTrash}>
+                    <button className={styles.buttonTrash} onClick={() => handleDeleteComment(it.id, comments, setComments)}>
                       <FaTrash size={18} color='#ea3140' />
                     </button>
                   )}
