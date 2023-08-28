@@ -2,10 +2,14 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import styles from "./styles.module.css";
 
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
+
 const Header: React.FC = () => {
   const { data: session, status } = useSession();
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${inter.className}`}>
       <section className={styles.content}>
         <nav className={styles.nav}>
           <Link href='/'>

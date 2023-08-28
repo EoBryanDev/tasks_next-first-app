@@ -17,13 +17,17 @@ import TextArea from "@/components/TextArea";
 import { handleComment } from "./handles/handleComment";
 import { handleSubmit } from "./handles/handleSubmit";
 import { ICommentProps } from "@/Interface/ICommentProps";
+import { FaTrash } from "react-icons/fa";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 const Task: React.FC<ITaskProps> = ({ item, allComments }: ITaskProps) => {
   const { data: session, status } = useSession();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<ICommentProps[]>(allComments || []);
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${inter.className}`}>
       <Head>
         <title>Task - Task Details</title>
       </Head>
@@ -39,7 +43,15 @@ const Task: React.FC<ITaskProps> = ({ item, allComments }: ITaskProps) => {
 
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-            handleSubmit(e, comment, setComment, session, item?.taskId)
+            handleSubmit(
+              e,
+              comment,
+              setComment,
+              session,
+              item?.taskId,
+              comments,
+              setComments
+            )
           }
         >
           <TextArea
@@ -57,14 +69,24 @@ const Task: React.FC<ITaskProps> = ({ item, allComments }: ITaskProps) => {
 
       <section className={styles.commentsContainer}>
         <h2>All Comments</h2>
-        {(comments.length === 0 && (
-          <span>There was not found any comments...</span>
-        )) ||
-          comments.map((it) => (
-            <article key={it.id} className={styles.comment}>
-              <p>{it.comment}</p>
-            </article>
-          ))}
+        <div className={styles.grid}>
+          {(comments.length === 0 && (
+            <span>There was not found any comments...</span>
+          )) ||
+            comments.map((it) => (
+              <article key={it.id} className={styles.comment}>
+                <div className={styles.headComment}>
+                  <label className={styles.commentLabel}>{it.name}</label>
+                  {session?.user?.email === it.user && (
+                    <button className={styles.buttonTrash}>
+                      <FaTrash size={18} color='#ea3140' />
+                    </button>
+                  )}
+                </div>
+                <p>{it.comment}</p>
+              </article>
+            ))}
+        </div>
       </section>
     </div>
   );

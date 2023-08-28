@@ -25,6 +25,9 @@ import { handleShare } from "./handles/handleShare";
 import { handleDeleteTask } from "./handles/handleDelete";
 import { handleRegisterTask } from "./handles/handleRegisterTask";
 import { handleCheckbox } from "./handles/handleCheckbox";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 import styles from "./styles.module.css";
 
@@ -65,7 +68,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ user }: IDashboardProps) => {
 
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${inter.className}`}>
       <Head>
         <title>My Dashboard</title>
       </Head>

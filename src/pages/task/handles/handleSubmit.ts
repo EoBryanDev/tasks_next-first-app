@@ -1,12 +1,15 @@
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/services/FirebaseConection";
+import { ICommentProps } from "@/Interface/ICommentProps";
 
 export const handleSubmit = async (
   e: React.FormEvent<HTMLFormElement>,
   comment: string,
   setComment: (comment: string) => void,
   session: any,
-  taskId: string
+  taskId: string,
+  comments: ICommentProps[],
+  setComments: (comments: ICommentProps[]) => void
 ) => {
   e.preventDefault();
 
@@ -28,6 +31,18 @@ export const handleSubmit = async (
       email: session?.user?.email,
       taskId,
     });
+
+    const data = {
+      id: docRef.id,
+      comment,
+      name: session?.user?.name,
+      user: session?.user?.email,
+      taskId,
+    };
+
+    let newArray = [...comments, data]
+
+    setComments(newArray);
     setComment("");
   } catch (error) {
     console.log(error);

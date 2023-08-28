@@ -59,3 +59,37 @@
     cursor: not-allowed;
     background-color: rgba(49, 131, 255, 0.4)
 }
+
+.comment {
+    border: 1px solid #ddd;
+    padding: 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    
+}
+.grid {
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.headComment {
+    display: flex;
+    align-items: center;
+}
+
+.commentLabel {
+    background-color: #ddd;
+    padding: 4px 8px;
+    margin-right: 8px;
+    border-radius: 4px;
+}
+.buttonTrash {
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.comment p {
+    margin-top: 14px;
+    white-space: pre-wrap;
+}
